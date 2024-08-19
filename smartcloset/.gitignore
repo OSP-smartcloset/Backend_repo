@@ -36,3 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 /src/main/resources/smartcloset-81c5d-firebase-adminsdk-lmich-92e177d20f.json
+/src/main/resources/firebase_service_key.json

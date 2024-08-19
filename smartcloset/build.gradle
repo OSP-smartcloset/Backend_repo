@@ -34,8 +34,11 @@ dependencies {
 //	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
-//	implementation 'com.google.firebase:firebase-admin:9.0.0'
-	implementation files('libs/web-push-5.0.3.jar')
+	implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+	implementation 'com.google.firebase:firebase-admin:6.8.1'
+	implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.2.2'
+
 }
 
 tasks.named('test') {
