@@ -1,4 +1,4 @@
-package com.example.smartcloset.chat;
+package com.example.smartcloset;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
