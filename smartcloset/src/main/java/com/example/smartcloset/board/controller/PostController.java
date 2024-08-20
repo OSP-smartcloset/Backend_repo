@@ -2,7 +2,6 @@ package com.example.smartcloset.board.controller;
 
 import com.example.smartcloset.board.model.Post;
 import com.example.smartcloset.board.service.PostService;
-import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,14 +32,7 @@ public class PostController {
         return postService.searchPostsByTitle(title);
     }
 
-    @GetMapping("/search/page")
-    public Page<Post> searchPostsWithPaging(
-            @RequestParam String title,
-            @RequestParam int page,
-            @RequestParam int size
-    ) {
-        return postService.searchPostsByTitleWithPaging(title, page, size);
-    }
+    // 페이징 메서드 제거
 
     @PostMapping
     public Post createPost(@RequestBody Post post) {
@@ -60,5 +52,11 @@ public class PostController {
     @DeleteMapping("/{id}")
     public void deletePost(@PathVariable Long id) {
         postService.deletePost(id);
+    }
+
+    // 새로운 메서드 추가: 마지막으로 로드된 게시물 이후의 게시물들을 불러오는 메서드
+    @GetMapping("/loadMore")
+    public List<Post> loadMorePosts(@RequestParam Long lastPostId, @RequestParam int limit) {
+        return postService.getPostsAfterId(lastPostId, limit);
     }
 }
