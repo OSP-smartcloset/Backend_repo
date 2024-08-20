@@ -70,5 +70,10 @@ public class NotificationService {
     public void sendPeriodicNotifications() {
         // 알림을 보내는 로직
     }
+    public void sendLikeNotification(Long postId) {
+    }
+
+    public void sendTopPostNotification(Long postId) {
+    }
 
 }
