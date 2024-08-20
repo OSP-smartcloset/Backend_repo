@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import okhttp3.*;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -64,4 +65,10 @@ public class NotificationService {
         googleCredentials.refreshIfExpired();
         return googleCredentials.getAccessToken().getTokenValue();
     }
+
+    @Scheduled(fixedRate = 60000)  // 예: 1분마다 실행
+    public void sendPeriodicNotifications() {
+        // 알림을 보내는 로직
+    }
+
 }
