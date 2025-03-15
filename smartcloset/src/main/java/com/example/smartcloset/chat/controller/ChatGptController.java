@@ -7,6 +7,7 @@ import com.example.smartcloset.chat.dto.ChatResponseDto;
 import com.example.smartcloset.chat.service.PostService;
 import com.example.smartcloset.chat.service.WeatherService;
 import com.example.smartcloset.chat.util.HashTagGenerator;
+import com.example.smartcloset.global.common.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
@@ -34,6 +35,9 @@ public class ChatGptController {
     @Autowired
     private WeatherService weatherService;
 
+    @Autowired
+    private RedisService redisService;
+
     @PostMapping("/chat")
     public @ResponseBody ChatResponseDto handleChat(@RequestBody ChatRequestDto chatRequestDto) {
         try {
@@ -47,6 +51,16 @@ public class ChatGptController {
             // 프롬프트와 날씨 정보를 결합
             String extendedPrompt = prompt + "\n\n현재 날씨 정보: " + weatherInfo;
 
+            // 캐시 키 생성 (extendedPrompt의 해시값 사용)
+            String cacheKey = "gpt:response:" + extendedPrompt.hashCode();
+
+            // Redis에서 캐시된 결과 확인
+            String cachedResponse = redisService.getValue(cacheKey);
+            if (cachedResponse != null) {
+                return new ChatResponseDto(cachedResponse);
+            }
+
+            // API 호출: GPT 답변 가져오기
             ChatGptRequest request = new ChatGptRequest(model, extendedPrompt);
             ChatGptResponse chatGptResponse = restTemplate.postForObject(apiURL, request, ChatGptResponse.class);
 
@@ -64,6 +78,9 @@ public class ChatGptController {
 
             // 게시물 저장 (선택 사항)
             postService.savePost(resultWithHashtags);
+
+            // 결과 캐싱 (예: 1시간 동안 캐싱)
+            redisService.setValue(cacheKey, resultWithHashtags, 3600);
 
             return new ChatResponseDto(resultWithHashtags);
         } catch (Exception e) {

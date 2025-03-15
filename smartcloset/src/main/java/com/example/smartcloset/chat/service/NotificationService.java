@@ -11,6 +11,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import com.example.smartcloset.global.common.service.RedisService;
 
 import java.io.IOException;
 import java.util.List;
@@ -19,11 +20,19 @@ import java.util.List;
 @RequiredArgsConstructor
 public class NotificationService {
 
-    private final String API_URL = "https://fcm.googleapis.com/v1/projects/" +
-            "smartcloset-81c5d/messages:send";
+    private final String API_URL = "https://fcm.googleapis.com/v1/projects/smartcloset-81c5d/messages:send";
     private final ObjectMapper objectMapper;
 
+    private final RedisService redisService;
+
     public void sendMessageTo(String targetToken, String title, String body) throws IOException {
+        // 캐시 키: 동일 대상, 제목의 알림이 최근 전송되었는지 체크 (예: 5분 간 중복 전송 방지)
+        String cacheKey = "fcm:notification:" + targetToken + ":" + title.hashCode();
+        if (redisService.exists(cacheKey)) {
+            // 이미 전송된 알림이 있으면 전송하지 않음
+            return;
+        }
+
         String message = makeMessage(targetToken, title, body);
 
         OkHttpClient client = new OkHttpClient();
@@ -39,6 +48,9 @@ public class NotificationService {
         Response response = client.newCall(request).execute();
 
         System.out.println(response.body().string());
+
+        // 알림 전송 후 캐시 설정 (예: 5분 동안 동일 알림 재전송 방지)
+        redisService.setValue(cacheKey, "sent", 300);
     }
 
     private String makeMessage(String targetToken, String title, String body) throws JsonParseException, JsonProcessingException {
@@ -68,12 +80,14 @@ public class NotificationService {
 
     @Scheduled(fixedRate = 60000)  // 예: 1분마다 실행
     public void sendPeriodicNotifications() {
-        // 알림을 보내는 로직
+        // 주기적으로 알림을 보내는 로직 (필요 시 캐싱 활용 가능)
     }
+
     public void sendLikeNotification(Long postId) {
+        // 좋아요 알림 전송 시에도 캐싱 로직 적용 가능
     }
 
     public void sendTopPostNotification(Long postId) {
+        // 인기 게시물 알림 전송 시에도 캐싱 로직 적용 가능
     }
-
 }
