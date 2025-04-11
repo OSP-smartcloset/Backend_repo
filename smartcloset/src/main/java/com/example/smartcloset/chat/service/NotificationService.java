@@ -27,7 +27,10 @@ public class NotificationService {
 
     public void sendMessageTo(String targetToken, String title, String body) throws IOException {
         String cacheKey = "fcm:notification:" + targetToken + ":" + title.hashCode();
-        if (redisService.exists(cacheKey)) {
+
+        // 🔄 중복 전송 방지: 5분 이내 동일 타겟 + 제목은 무시
+        boolean isNew = redisService.setIfAbsent(cacheKey, "sent", 300);
+        if (!isNew) {
             return;
         }
 
@@ -44,11 +47,9 @@ public class NotificationService {
                 .build();
 
         Response response = client.newCall(request).execute();
-
         System.out.println(response.body().string());
-
-        redisService.setValue(cacheKey, "sent", 300);
     }
+
 
     private String makeMessage(String targetToken, String title, String body) throws JsonParseException, JsonProcessingException {
         NotificationMessage notificationMessage = NotificationMessage.builder()
