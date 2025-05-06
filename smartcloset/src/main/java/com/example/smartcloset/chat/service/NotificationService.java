@@ -28,8 +28,8 @@ public class NotificationService {
     public void sendMessageTo(String targetToken, String title, String body) throws IOException {
         String cacheKey = "fcm:notification:" + targetToken + ":" + title.hashCode();
 
-        // 🔄 중복 전송 방지: 5분 이내 동일 타겟 + 제목은 무시
-        boolean isNew = redisService.setIfAbsent(cacheKey, "sent", 300);
+        // 중복 전송 방지: 5초 이내 동일 타겟 + 제목은 무시
+        boolean isNew = redisService.setIfAbsent(cacheKey, "sent", 5);
         if (!isNew) {
             return;
         }
